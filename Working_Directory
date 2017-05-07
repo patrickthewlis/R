@@ -1,0 +1,4 @@
+getwd()
+# set the working directory
+# setwd("~/Documents/R")
+# setwd("C:/Users/patrickthewlis/Documents/R")
