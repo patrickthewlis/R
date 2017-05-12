@@ -1,4 +1,14 @@
+# Get the working directory
 getwd()
 # set the working directory
-# setwd("~/Documents/R")
-# setwd("C:/Users/patrickthewlis/Documents/R")
+setwd()
+# set the working directory to our folder
+setwd(file.choose()) # Browse files for new working directory
+setwd("~/Documents/R") # ~ is used for Mac users
+
+# Using the "Pipe" command (e.g. %>% in)
+getwd() %>%
+  setwd(file.choose())
+
+# Pipe command is similar to /// function in Stata to spread code
+# over multiple lines ^as such^.
