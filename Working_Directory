@@ -6,7 +6,7 @@ setwd()
 setwd(file.choose()) # Browse files for new working directory
 setwd("~/Documents/R") # ~ is used for Mac users
 
-# Using the "Pipe" command (e.g. %>% in)
+# Using the "Pipe" command (e.g. %>%)
 getwd() %>%
   setwd(file.choose())
 
