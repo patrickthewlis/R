@@ -56,3 +56,34 @@ rdmTweets <- searchTwitter('#odid', n=500) # "searchTwitter"
 rdmtweets1 <- userTimeline("HWCoates", n = 300) # Retrieve the first 300 tweets from user's timeline
 (nDocs <- length(rdmtweets1)) # Average length of each tweet (97)
 rdmtweets1[11:15] # Retrieve 11th to 15th tweets on user's timeline
+
+
+
+
+# --------------------------------------
+#  Presenting Tweets in a Nicer Format
+# --------------------------------------
+
+# Present tweets in a nicer format using a ForEach Loop (Wrapping Text to fit screen)
+      # "i" refers to the i-th tweet, so we have five different values of "i"
+      # 1st "i" = 11th tweet / 2nd "i" = 12th tweet, etc. 
+
+for (i in 11:15) {
+  cat(paste ("[[", i, "]] ", sep=""))
+  writeLines(strwrap(rdmtweets1[[i]]$getText(), width=73)) # Wraps the text to 73 characters per line
+}
+
+
+
+# --------------------------------------
+#         Transform the Text:
+#     Put Tweets into a Data Frame
+# --------------------------------------
+
+# Convert tweets to a data frame
+
+tweets.frame <- do.call("rbind", lapply(rdmtweets1, as.data.frame)) #as.data.frame makes the object a dataframe
+View(tweets.frame) # View all tweets in a table
+dim(tweets.frame) # Provide info on number of tweets 
+                  # and type of info (i.e. is tweet a retweet, source, etc.)
+
