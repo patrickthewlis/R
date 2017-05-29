@@ -1,0 +1,58 @@
+install.packages("twitteR") # install package for mining Twitter with R
+                            # provides an interface for the Twitter API
+install.packages("RCurl")   # fetches URIs
+install.packages("ROAuth")  # authentication for Twitter
+install.packages("igraph")  # collection of social network analysis tools
+install.packages("httr") # setup_twitter_oauth() function which uses the httr package.
+install.packages("bitops")
+install.packages("devtools")
+install.packages("tm") # Functions for text mining
+install.packages("wordcloud") # Data visualisation of tweets
+
+# Alternative installing packages; Load all at once
+install.packages(c("twitteR", "RCurl", "igraph", "bitops", "ROAuth", "httr", "devtools", "tm", "wordcloud"))
+
+# Loading packages all at once
+lapply(c("twitteR", "RCurl", "igraph", "bitops", "ROAuth", "httr", "devtools", "tm", "wordcloud"),
+       library, character.only = TRUE)
+
+# Loading packages individually
+library(twitteR) # Load package for twitteR
+library(RCurl) # Load package for RCurl
+library(ROAuth) # Load package for ROauth
+library(igraph) # Load package for igraph
+library(httr) # Load package for httr
+library(bitops) # Load package for bitops
+library(devtools) # Load package for devtools
+library(tm) # Load package for tm
+library(wordcloud) # Load package for wordcloud
+
+--------------------------
+# Twitter Authentication
+--------------------------
+# Website for Twitter API: https://patrickthewlis3.wordpress.com/
+# Use Twitter API to find the access keys below
+
+#consumer_key <- "your_consumer_key"
+#consumer_secret <- "your_consumer_secret"
+#access_token <- "your_access_token"
+#access_secret <- "your_access_secret"
+#setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
+
+# Setup authentication
+setup_twitter_oauth(consumer_key, consumer_secret, access_token, access_secret)
+
+
+
+
+# --------------------------------------
+#                 MINING
+# --------------------------------------
+
+# Command for searching a hashtag on twitter
+rdmTweets <- searchTwitter('#odid', n=500) # "searchTwitter"
+
+# Command for searching a Users Tweets (Hugh)
+rdmtweets1 <- userTimeline("HWCoates", n = 300) # Retrieve the first 300 tweets from user's timeline
+(nDocs <- length(rdmtweets1)) # Average length of each tweet (97)
+rdmtweets1[11:15] # Retrieve 11th to 15th tweets on user's timeline
