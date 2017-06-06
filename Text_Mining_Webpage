@@ -1,0 +1,224 @@
+# Alternative installing packages; Load all at once
+install.packages(c("twitteR", "RCurl", "igraph", "bitops", "ROAuth", "httr", "devtools", "tm", "wordcloud"))
+
+# Loading packages all at once
+lapply(c("twitteR", "RCurl", "igraph", "bitops", "ROAuth", "httr", "devtools", "tm", "wordcloud"),
+       library, character.only = TRUE)
+
+# Create data frame for the URL (getURL)
+# Request and retrieve data from the URL
+web.scrape1 <- getURL("__________________", ssl.verifypeer = FALSE)
+
+# Find the classification of the data i.e. factor var, character
+class(web.scrape1)
+
+# Find out information about returned vector (i.e. web.scrape)
+is.vector(web.scrape1) # Returned object is vector of length one
+
+# Print the retrieved information
+print(web.scrape1)
+
+
+################################
+ Extract main text of the page
+################################
+
+# Package: XML (use "REQUIRE" to get package)
+# Use this to extract data we need, and discard all other data
+install.packages("XML")
+require("XML")
+
+# New data frame
+# To begin, create a tree structure from the original data
+           # frame (web.scrape1) using "htmlTreeParse" function
+           # from the XML package
+web.scrape2 <- htmlTreeParse(web.scrape1, useInternal=TRUE)
+
+# Print the newly retrieved data
+# Retrieves all the text data we want
+print(web.scrape2)
+# Main text of the page will be contained in the <p> paragraph tag
+
+
+
+##########################################
+Extract main text of the page (even more)
+##########################################
+
+# Extract the content of each paragraph
+# Command/Function: "xpathApply"
+# New data frame/vector: "web.scrape3"
+# "Unlist" is used as we wish to return a vector, NOT a list
+web.scrape3 <- unlist(xpathApply(web.scrape2, path="//p", fun = xmlValue))
+
+# Find the class of the data frame
+class(web.scrape3)
+
+# Print the data frame
+print(web.scrape3)
+
+
+
+##########################################
+##########################################
+              Text Mining
+##########################################
+##########################################
+
+# 1st Step: Create a corpus = Structured set of documents
+# Command: "Corpus" --> From package: tm
+# Other commands: Create corpus object from vector: "VectorSource"
+
+# VectorSource is a function of the tm package
+# VectorSource: Interprets each element of a text vector as an
+              # individual document
+
+# web.scrape3 has a paragraph as its element
+# 2nd Step: Combine each paragraph to create a vector of length "i"
+
+# ForEach loop for each text document
+
+
+##########################################
+ Step 1: Create new data.frame as .txt
+##########################################
+
+web.scrape.txt<-NULL
+for (i in 1:11:(length(web.scrape3)-1)) {
+     web.scrape.txt <- paste(web.scrape.txt, as.character(web.scrape3[1]), sep= " ")
+}
+
+# Find length of vector (should be 1)
+is.vector(web.scrape.txt)
+
+# Print data.frame/vector
+print(web.scrape.txt)
+
+
+
+
+##########################################
+         Cleaning data.frame
+       and Creating the Corpus
+##########################################
+
+# Remove "\r" (carriage return) and "\n" (new line) strings from
+        # the text
+
+# Cleaning the Data frame/Vector
+      # "gsub": substitute, in this case, new line breaks
+web.scrape.txt <- gsub("\r?\n|\r", "", web.scrape.txt)
+       
+       
+# Create the corpus
+       # Function: "Corpus"
+       # Other commands: "VectorSource"
+my.corpus <-Corpus(VectorSource(web.scrape.txt))
+
+# View text data in a nicer format
+       # Command: "strwrap"
+strwrap(my.corpus[[1]])
+
+
+
+
+##########################################
+            Use tm package
+##########################################
+
+# Change all words to lower cases
+my.corpus <- tm_map(my.corpus, tolower)
+# Remove punctuation
+my.corpus <- tm_map(my.corpus, removePunctuation)
+# Remove extra white spaces
+my.corpus <- tm_map(my.corpus, stripWhitespace)
+# Remove stopwords i.e. me, what, were, who, is, etc.
+my.corpus <- tm_map(my.corpus, removeWords, stopwords('english'))
+# Convert corpus to plain text document
+my.corpus <- tm_map(my.corpus, PlainTextDocument)
+# View text data in a nicer format
+strwrap(my.corpus[[1]])
+
+
+
+
+
+
+
+##########################################
+##########################################
+      Text Mining to Data Analysis
+##########################################
+##########################################
+
+# Convert the structure of data --> To a "Term Document Matrix"
+# New features: Row for each unique word
+              # Value in each row = NUMBER OF TIMES WORD APPEARS
+              #                   = WORD FREQUENCY
+# Command: "TermDocumentMatrix"
+
+# Create tdm
+newcorpus <- TermDocumentMatrix(my.corpus)
+
+# Inspect the term document matrix
+          # Inspect first 10 entries
+inspect(newcorpus[1:10,]) # Remember the COMMA in [1:10,]
+
+
+
+
+
+
+
+
+
+
+##########################################
+##########################################
+           Create WordCloud
+##########################################
+##########################################
+
+# Convert term document matrix to a matrix object
+# Command: "as.matrix"
+wordcloud1 <- as.matrix(newcorpus)
+
+# Title of wordcloud
+colnames(wordcloud1) <- '_____'
+
+# Sort data
+      # Command: "sort"
+      # Other commands: "rowSort"
+      # Sort data by DECREASING
+v <- sort(rowSums(wordcloud1), decreasing = TRUE)
+
+# Create a data frame
+      # Necessary for the wordcloud function
+wordclouddf <- data.frame(word=names(v), freq=v)
+      # "v" refers to the sorting of data
+          # Therefore, data will be sorted according to decreasing
+          # frequency
+
+
+##########################################
+        Formatting the WordCloud
+##########################################
+
+# Set background colour of Plot to Black
+    # Command: "par(bg = '')
+par(bg='black')
+
+# Create wordcloud
+      # Command: "random.order" --> Randomly order words
+      # Other Commands: "max.word" --> Set max. number of words
+      #                                in the wordcloud
+# Set text color
+      # Command: "color="
+
+# Take variable out of data frame = "dataframe$variable"
+
+##########################################
+               WordCloud
+##########################################
+wordcloud(wordclouddf$word, wordclouddf$freq, random.order = FALSE, max.word = 300, color='gold')
+
