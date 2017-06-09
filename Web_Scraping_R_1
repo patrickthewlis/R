@@ -1,0 +1,67 @@
+# Loading packages all at once
+
+lapply(c("data.table", "XML", "rvest", "WriteXLS", "xlsx"),
+       library, character.only = TRUE)
+
+# In case of pagination, this is the command to select pages we want to scrape
+# pages <- c(1:200)
+
+
+###########################################################################
+LONDON
+###########################################################################
+
+#######################
+Specifying the URL
+#######################
+
+x <- '_____________' # Provide URL
+
+# Reading the HTML from the website
+# Command: "read_html"
+
+xdir <- read_html(x)
+
+
+##########################
+Collect CSS Selector
+##########################
+
+# Mosques
+x_mosque <- html_nodes(xdir, 'td')
+
+# Convert data to text
+
+x_mosque_txt <- html_text(x_mosque)
+
+# Tabulate text
+
+print(x_mosque_txt)
+
+
+
+
+##########################
+Put into data.frame
+##########################
+
+location <- data.frame(x_mosque_txt, stringsAsFactors = FALSE)
+head(location)
+print(location)
+
+# Put into Table
+write.table(location, file = "location.txt", sep = "", quote = FALSE, row.names = F)
+
+
+###########################
+Write into CSV/EXCEL File
+###########################
+
+# package = "xlsx"
+
+# .csv file
+# Given .csv stands for "comma separated value", we do NOT have to define "sep"
+write.csv(location, file = "location.csv", quote = FALSE, row.names = F) 
+
+# .xls file
+write.xlsx(location, file = mosques.xlsx, sheetName="location")
