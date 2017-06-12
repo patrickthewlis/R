@@ -1,3 +1,6 @@
+Sources/References: <https://quantmacro.wordpress.com/2016/04/30/web-scraping-for-text-mining-in-r/>
+
+
 # Alternative installing packages; Load all at once
 install.packages(c("twitteR", "RCurl", "igraph", "bitops", "ROAuth", "httr", "devtools", "tm", "wordcloud"))
 
