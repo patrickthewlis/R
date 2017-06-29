@@ -1,0 +1,255 @@
+###############################
+ Specify Path in normalizePath
+###############################
+
+# Allowing us to run our script
+        # Defines the library trees where are packages are looked for
+        # All of the packages are stored in one folder
+
+.libPaths("S:/R/win-library/3.4")
+
+
+################
+  Libraries
+################ 
+
+lapply(c("XML", "rvest", "dplyr", "tidytext", "tm", "stringr", "ggplot2", "RColorBrewer", "wordcloud"),
+       library, character.only = TRUE)
+
+# tidytext = Tokenization/Pre-Processing
+# dplyr = Data Frames
+
+
+################
+ Loading Texts
+################
+
+texts <- file.path("S:", "Python", "Text_Files", "Sermons") # Construct path to file
+texts
+dir(texts)                                                  # Check that the corpus has loaded
+
+
+####################
+ Load Texts into R
+####################
+
+# Using the "tm" package
+      # Structure for managing documents in tm = CORPUS
+        # Command: "VCorpus"
+
+docs <- VCorpus(DirSource(texts))     # Identify the source of the directory
+                                      # i.e. document within file directory
+summary(docs)                         # Summarise the corpus
+
+writeLines(as.character(docs))        # Read the document in R Terminal
+
+
+
+##########################################
+ Alternative Way of Loading/Reading Texts
+##########################################
+
+# Load/Read documents with command: 'system.file'
+            # Highlight with package we are using as well in the code
+            # Highlight file type = 'txt'
+
+#txt <- system.file("texts", "txt", package = "tm")
+#(ovid <- VCorpus(DirSource(txt, encoding = "UTF-8"),
+                   #+ readerControl = list(language = "lat")))
+
+
+
+
+
+
+
+
+######################################################################
+#                   PRE-PROCESSING- tm v0.5/v0.6
+######################################################################
+
+# FOR ALL PRE-PROCESSING, NEED TO USE "content_transforer()"
+
+
+#####################
+       Removal
+#####################
+
+# Command: textfile <- tm_map(textfile, removeFunction)
+
+
+# Remove Stopwords
+
+        # Custom stopwords
+
+        myStopwords <- c(stopwords('english'), "muslims", "wa", "al", "ala",
+                         "o", "s", "go", "back", "two", "says", "can", "days",
+                         "yet", "used", "without", "sws", "many", "except",
+                         "ever", "even", "another", "example", "came", "however",
+                         "every", "name", "said", "please", "shall", "see", "alláh",
+                         "allahs", "also", "one", "now", "new", "never", "take", "may",
+                         "today", "say", "dont", "day", "upon", "among", "come", "part",
+                         "much", "let", "something")
+
+docs <- tm_map(docs, content_transformer(removeWords), myStopwords)
+
+
+# Convert all words to lowercase
+
+docs <- tm_map(docs, content_transformer(tolower))
+
+# Remove URLs
+    # define function to remove URL
+    # Substitute all lines starting with "http" with blankspace
+
+removeURL <- function(x) gsub("http[^[:space:]]*", "", x)
+    
+    # argument = function (x)
+    # Therefore, when we are working with "docs", x = docs
+    # Similar to when f(x)=x2, when f(5)=25
+    # Therefore, wherever x is in the function, it is replaced by "docs"
+    # Thus, gsub("http[^[:space:]]*", "", x) = gsub("http[^[:space:]]*", "", docs)
+    
+    # Therefore removeURL(docs) is equal to gsub("http[^[:space:]]*", "", docs)
+
+    
+docs <- tm_map(docs, content_transformer(removeURL)) # Put another way
+                                # docs <- tm_map(docs, (gsub"http[^[:space:]]*", "", docs)))
+
+
+# Remove anything OTHER than English
+
+    # define function
+    # Keep if alpha (i.e. letters) and space
+    # Everything else: Remove
+
+removeNumPunct <- function(x) gsub("[^[:alpha:][:space:]]*", "", x)
+
+docs <- tm_map(docs, content_transformer(removeNumPunct))
+
+# Removing Particular Words
+        # Use the 'c' array function
+
+docs <- tm_map(docs, removeWords, c("could", "qur", "two", "say", "says"))
+
+
+# Check that pre-processing has worked
+
+writeLines(as.character(docs))
+
+# Create a copy of the original
+
+docs_copy <- docs
+
+
+
+
+
+
+
+####################################################################
+#                   Tokenizing and Searching
+####################################################################
+
+# Create Term-Document Matrix
+
+tdm <- TermDocumentMatrix(docs,
+                          control = list(wordLengths = c(1, Inf))) # No restrictions on wordlength
+                                                                   # "inf" denotes infinity
+
+tdm
+
+
+# Inspect Frequency of Words
+        # command: 'findFreqTerms(tdm)'
+
+(freq.terms <- findFreqTerms(tdm, lowfreq = 700))  # lowfreq = 1000
+                                                   # lower frequency bound is 1000
+                                                   # Therefore, print only words that appear more than 1000 times 
+
+
+# Find frequency for all words in the corpus
+        # Treat Term-Document Matrix as a matrix i.e. as it already is
+
+term.freq <- rowSums(as.matrix(tdm))
+
+# Create/return subset of word vectors which meet set conditions
+        # Conditions: Must appear 400 or more times in the corpus
+
+term.freq <- subset(term.freq, term.freq >=700)
+
+# Store the subset in a dataframe for 'tidy' text analysis
+
+dataframe <- data.frame(term = names(term.freq), freq = term.freq)
+
+        # Drop " " from dataframe
+
+        dataframe <- dataframe[-c(1), ]
+
+
+
+
+
+
+####################################################################
+#                   Visualising Word Distributions
+####################################################################
+
+# Package: ggplot2
+# Bar Graph: Frequency Distribution
+    # Count Model
+    # Visual Preferences: Fill in Red with Black Border
+
+ggplot(dataframe, aes(x = term, y = freq)) + geom_bar(stat = "identity", fill="#FF9999", colour="black") +
+    xlab("Words") + ylab("Count") + coord_flip() +
+    scale_y_continuous(breaks = round(seq(min(dataframe$freq), max(dataframe$freq), by = 306)))
+
+
+
+
+####################################################################
+#                          Word Cloud
+####################################################################
+        
+# Store tdm in a variable --> Store it as a matrix
+        
+tdm_wc <- as.matrix(tdm)
+
+# Calculate frequency of words
+        # Sort by frequency
+        # Decreasing = HIGHER to LOWER
+
+word.freq <- sort(rowSums(tdm_wc), decreasing = TRUE)
+
+# Design of Wordcloud
+    # Colour Palette
+    # pal = Palette
+
+# Browse Colour Palette
+
+display.brewer.all()
+
+# Select Colour
+    # Command: "brewer.pal(number of different colours, name of the palette)
+
+pal <- brewer.pal(4, "RdBu")
+
+# Select Background
+
+par(bg="black")
+
+# Wordcloud
+    # No random order, as we want the MOST FREQUENT words to be at the CENTRE
+
+wordcloud(words = names(word.freq), freq = word.freq, min.freq = 450,
+          random.order = FALSE, colors = pal)
+
+
+
+
+# Using WordCloud 2
+
+wordcloud2(data = dataframe)
+
+wordcloud2(dataframe, color = "random-light", backgroundColor = "black")
+
