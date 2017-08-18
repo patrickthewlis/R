@@ -505,11 +505,16 @@ leaflet(main_df) %>%
 ###############
 
 # Create "if" argument for public and private universities
+         # Use "lapply" instead of "sapply"
+         # "lapply" returns a list of schoolids, each individual one as independent
+         # "sapply" returns a vector of schoolids, so just groups them as one
+         # Therefore, when using "sapply" we only get ONE type of schooltype,
+           and thus it will NOT distinguish between different types
 
 type_color <- function(main_df) {
-  sapply(main_df$typeschoolid, function(typeschoolid) {
+  lapply(main_df$typeschool, function(typeschool) {
     
-    if(typeschoolid == 1) {    # If university is private, then marker is red
+    if(typeschool == "private") {    # If university is private, then marker is red
                                      # MUST use "==", not "="
       "green"
       
